@@ -1,98 +1,104 @@
 package io.scalac.minesweeper.api
 
-import munit.FunSuite
+import munit.ScalaCheckSuite
+import org.scalacheck.Prop.*
 
-abstract class BoardSpec(factory: BoardFactory) extends FunSuite:
-  test("All coordinates should start covered") {
-    val board = createBoard()
+abstract class BoardSpec(factory: BoardFactory) extends ScalaCheckSuite:
+  private val gen = new Generators(factory)
+  import gen.*
 
-    board.allCoordinates
-      .map(board.stateAt)
-      .foreach(assertEquals(_, Coordinate.State.Covered))
+  property("All coordinates should start covered") {
+    forAll(boardGen) { board =>
+      board.allCoordinates.foreach { coordinate =>
+        assertEquals(board.stateAt(coordinate), Coordinate.State.Covered)
+      }
+    }
   }
 
-  test("Flagging should set coordinate as flagged") {
-    val board = createBoard()
-
-    board.allCoordinates
-      .map(coordinate => board.flag(coordinate).stateAt(coordinate))
-      .foreach(assertEquals(_, Coordinate.State.Flagged))
+  property("Flagging should set coordinate as flagged") {
+    forAll(boardGen) { board =>
+      forAll(coordinateGen(board)) { coordinate =>
+        val flaggedBoard = board.flag(coordinate)
+        assertEquals(flaggedBoard.stateAt(coordinate), Coordinate.State.Flagged)
+      }
+    }
   }
 
-  test("Flagging one coordinate should not affect other coordinates") {
-    val board = createBoard()
-
-    board.allCoordinates
-      .map(coordinate => (coordinate, board.flag(coordinate)))
-      .foreach { case (coordinate, updatedBoard) =>
+  property("Flagging one coordinate should not affect other coordinates") {
+    forAll(boardGen) { board =>
+      forAll(coordinateGen(board)) { coordinate =>
+        val updatedBoard = board.flag(coordinate)
         updatedBoard.allCoordinates
           .filterNot(_ == coordinate)
-          .foreach { c =>
-            assertEquals(updatedBoard.stateAt(c), board.stateAt(c))
+          .foreach { otherCoordinate =>
+            assertEquals(
+              updatedBoard.stateAt(otherCoordinate),
+              board.stateAt(otherCoordinate)
+            )
           }
       }
+    }
   }
 
-  test("Uncovering any empty coordinate should set coordinate as uncovered") {
-    val board = createBoard()
-
-    coordinatesWithoutMine(board)
-      .map(coordinate => board.uncover(coordinate).stateAt(coordinate))
-      .foreach(assertEquals(_, Coordinate.State.Uncovered))
+  property(
+    "Uncovering any empty coordinate should set coordinate as uncovered"
+  ) {
+    forAll(boardGen(chanceOfMine = .1)) { board =>
+      forAll(emptyCoordinateGen(board)) { coordinate =>
+        assertEquals(
+          board.uncover(coordinate).stateAt(coordinate),
+          Coordinate.State.Uncovered
+        )
+      }
+    }
   }
 
-  test("Uncovering some empty coordinate should keep state as Playing") {
-    val board = createBoard()
-
-    coordinatesWithoutMine(board)
-      .map(coordinate => board.uncover(coordinate).state)
-      .foreach(assertEquals(_, Board.State.Playing))
+  property("Uncovering some empty coordinate should keep state as Playing") {
+    forAll(boardGen(chanceOfMine = .1)) { board =>
+      emptyCoordinates(board).size > 1 ==>
+        forAll(emptyCoordinateGen(board)) { coordinate =>
+          assertEquals(board.uncover(coordinate).state, Board.State.Playing)
+        }
+    }
   }
 
-  test("Board state should start as Playing") {
-    val board = createBoard()
-
-    assertEquals(board.state, Board.State.Playing)
+  property("Board state should start as Playing") {
+    forAll(boardGen) { board =>
+      assertEquals(board.state, Board.State.Playing)
+    }
   }
 
-  test("Uncovering any coordinate which has mine should lose") {
-    val board = createBoard()
-
-    coordinatesWithMine(board)
-      .map(coordinate => board.uncover(coordinate).state)
-      .foreach(assertEquals(_, Board.State.Lost))
+  property("Uncovering any coordinate which has mine should lose") {
+    forAll(boardGen(chanceOfMine = .8)) { board =>
+      forAll(minedCoordinateGen(board)) { coordinate =>
+        assertEquals(board.uncover(coordinate).state, Board.State.Lost)
+      }
+    }
   }
 
-  test("Uncovering all empty coordinates should win") {
-    val board = createBoard()
+  property("Uncovering all empty coordinates should win") {
+    forAll(boardGen) { board =>
+      emptyCoordinates(board).nonEmpty ==> {
+        val finalState =
+          emptyCoordinates(board)
+            .foldLeft(board)(_ uncover _)
+            .state
 
-    val finalState =
-      coordinatesWithoutMine(board)
-        .foldLeft(board)(_ uncover _)
-        .state
-
-    assertEquals(finalState, Board.State.Won)
+        finalState == Board.State.Won
+      }
+    }
   }
 
-  test("Uncovering flagged mine should not lose") {
-    val board = createBoard()
-
-    coordinatesWithMine(board)
-      .map(coordinate => board.flag(coordinate).uncover(coordinate).state)
-      .foreach(assertEquals(_, Board.State.Playing))
+  property("Uncovering flagged mine should not lose") {
+    forAll(boardGen(chanceOfMine = .8)) { board =>
+      forAll(minedCoordinateGen(board)) { coordinate =>
+        assertEquals(
+          board.flag(coordinate).uncover(coordinate).state,
+          Board.State.Playing
+        )
+      }
+    }
   }
 
-  private def createBoard(): Board =
-    factory.create(25, _.hashCode() % 2 == 0)
-
-  private def coordinatesWithMine(board: Board): Seq[Coordinate] =
-    filterCoordinates(board, board.hasMine)
-
-  private def coordinatesWithoutMine(board: Board): Seq[Coordinate] =
-    filterCoordinates(board, !board.hasMine(_))
-
-  private def filterCoordinates(
-      board: Board,
-      predicate: Coordinate => Boolean
-  ): Seq[Coordinate] =
-    board.allCoordinates.filter(predicate)
+  private def emptyCoordinates(board: Board): Seq[Coordinate] =
+    board.allCoordinates.filterNot(board.hasMine)

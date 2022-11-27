@@ -41,5 +41,7 @@ commands. See the corresponding documentation to find more about how they work:
 - [Scalafmt](https://scalameta.org/scalafmt) - Code formatter
 - [sbt-tpolecat](https://github.com/typelevel/sbt-tpolecat) - Strict scalac options
 - [WartRemover](https://www.wartremover.org) - Static linter
+- [MUnit](https://scalameta.org/munit/) - Test execution framework
+- [ScalaCheck](https://scalacheck.org) - Property-based testing library
 - [sbt-scoverage](https://github.com/scoverage/sbt-scoverage) - Code coverage
 - [Stryker](https://stryker-mutator.io/docs/stryker4s/getting-started/) - Mutation testing
