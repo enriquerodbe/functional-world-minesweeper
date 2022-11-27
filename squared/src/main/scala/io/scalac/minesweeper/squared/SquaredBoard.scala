@@ -2,9 +2,9 @@ package io.scalac.minesweeper.squared
 
 import io.scalac.minesweeper.api.*
 
-class SquaredBoard extends Board:
+class SquaredBoard(size: Int, _hasMine: Coordinate => Boolean) extends Board:
   override def uncover(coordinate: Coordinate): Board =
-    new SquaredBoard:
+    new SquaredBoard(size, _hasMine):
       override def stateAt(_coordinate: Coordinate): Coordinate.State =
         if SquaredBoard.this.stateAt(_coordinate) == Coordinate.State.Flagged
         then Coordinate.State.Flagged
@@ -15,18 +15,25 @@ class SquaredBoard extends Board:
           if stateAt(coordinate) == Coordinate.State.Flagged
           then SquaredBoard.this.state
           else Board.State.Lost
-        else Board.State.Won
+        else if (won()) Board.State.Won
+        else Board.State.Playing
+
+  private def won(): Boolean =
+    allCoordinates
+      .filter(!hasMine(_))
+      .forall(stateAt(_) == Coordinate.State.Uncovered)
 
   override def flag(coordinate: Coordinate): Board =
-    new SquaredBoard:
+    new SquaredBoard(size, _hasMine):
       override def stateAt(_coordinate: Coordinate): Coordinate.State =
-        Coordinate.State.Flagged
+        if (_coordinate == coordinate) Coordinate.State.Flagged
+        else SquaredBoard.this.stateAt(_coordinate)
 
   override def allCoordinates: Seq[Coordinate] =
-    Seq.tabulate(5)(SquaredCoordinate(_, 0))
+    Seq.tabulate(size)(SquaredCoordinate(_, 0))
 
   override def hasMine(coordinate: Coordinate): Boolean =
-    coordinate.hashCode() % 2 == 0
+    _hasMine(coordinate)
 
   override def stateAt(coordinate: Coordinate): Coordinate.State =
     Coordinate.State.Covered

@@ -14,3 +14,8 @@ abstract class BoardFactorySpec(create: () => BoardFactory) extends FunSuite:
       assertEquals(c.hashCode() % 2 == 0, board.hasMine(c))
     )
   }
+
+  test("Should set all mines") {
+    val board = create().create(5, _ => true)
+    board.allCoordinates.foreach(c => assert(board.hasMine(c)))
+  }
