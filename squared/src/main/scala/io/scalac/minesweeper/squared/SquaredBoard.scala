@@ -6,19 +6,16 @@ class SquaredBoard extends Board:
   override def uncover(coordinate: Coordinate): Board =
     new SquaredBoard:
       override def stateAt(_coordinate: Coordinate): Coordinate.State =
-        if (SquaredBoard.this.stateAt(_coordinate) == Coordinate.State.Flagged)
-          Coordinate.State.Flagged
-        else
-          Coordinate.State.Uncovered
+        if SquaredBoard.this.stateAt(_coordinate) == Coordinate.State.Flagged
+        then Coordinate.State.Flagged
+        else Coordinate.State.Uncovered
 
       override def state: Board.State =
         if hasMine(coordinate) then
-          if stateAt(coordinate) == Coordinate.State.Flagged then
-            SquaredBoard.this.state
-          else
-            Board.State.Lost
-        else
-          Board.State.Won
+          if stateAt(coordinate) == Coordinate.State.Flagged
+          then SquaredBoard.this.state
+          else Board.State.Lost
+        else Board.State.Won
 
   override def flag(coordinate: Coordinate): Board =
     new SquaredBoard:
