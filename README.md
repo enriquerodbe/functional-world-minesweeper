@@ -8,7 +8,9 @@ This is a [sbt](https://www.scala-sbt.org/) multi-module project with the follow
 
 1. `api` - Contains only interfaces and specifications about the expected behavior of any
    implementation of the game.
-2. `squared` - An implementation for the classic Minesweeper in 2D.
+2. `squared` - An implementation for the classic Minesweeper in a squared board.
+3. `cli` - Command line interface for any implementation of the API.
+4. `cli-squared` - Combination of CLI with the squared implementation.
 
 ## Development environment
 

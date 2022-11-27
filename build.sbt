@@ -8,6 +8,7 @@ lazy val commonSettings = Seq(
 )
 
 val catsEffect = "org.typelevel" %% "cats-effect" % "3.4.1"
+val catsParse = "org.typelevel" %% "cats-parse" % "0.3.8"
 val munit = "org.scalameta" %% "munit" % "0.7.29" % Test
 val munitScalaCheck = "org.scalameta" %% "munit-scalacheck" % "0.7.29" % Test
 
@@ -26,7 +27,8 @@ lazy val squared =
     .settings(commonSettings)
     .dependsOn(api % "test->test;compile->compile")
     .settings(
-      name := "minesweeper-squared"
+      name := "minesweeper-squared",
+      libraryDependencies += catsParse
     )
 
 lazy val cli =
@@ -36,7 +38,7 @@ lazy val cli =
     .dependsOn(api % "test->test;compile->compile")
     .settings(
       name := "minesweeper-cli",
-      libraryDependencies += catsEffect
+      libraryDependencies ++= Seq(catsEffect, catsParse)
     )
 
 lazy val `cli-squared` =

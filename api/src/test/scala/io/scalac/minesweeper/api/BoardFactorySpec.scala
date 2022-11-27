@@ -5,7 +5,7 @@ import org.scalacheck.Prop.*
 
 abstract class BoardFactorySpec(boardFactory: BoardFactory)
     extends ScalaCheckSuite:
-  val gen = new Generators(boardFactory)
+  val gen = Generators(boardFactory)
   import gen.*
 
   property("Should create board of given size") {

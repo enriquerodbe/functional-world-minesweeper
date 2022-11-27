@@ -1,22 +1,23 @@
 package io.scalac.minesweeper.squared
 
-import io.scalac.minesweeper.api.{Board, Coordinate}
-import scala.util.matching.Regex
+import cats.parse.Numbers.*
+import cats.parse.Parser
+import cats.parse.Parser.*
+import cats.parse.Rfc5234.*
+import cats.syntax.apply.*
+import io.scalac.minesweeper.api.Board
 
-object SquaredCoordinateParser:
-  val regex: Regex = """(\d+) (\d+)""".r
+class SquaredCoordinateParser(board: Board):
+  private val nonNegNum: Parser[Int] =
+    bigInt.map(_.toInt).filter(_ >= 0)
 
-  def parse(input: String, board: Board): Option[Coordinate] =
-    input match
-      case regex(x, y) =>
-        for
-          validatedX <- x.toIntOption
-          validatedY <- y.toIntOption
-          coordinate <- SquaredCoordinate.validated(
-            validatedX,
-            validatedY,
-            board.size
-          )
-        yield coordinate
-      case _ =>
-        None
+  private val parser: Parser[SquaredCoordinate] =
+    (nonNegNum <* sp.rep, nonNegNum)
+      .mapN(SquaredCoordinate.validated(_, _, board.size))
+      .flatMap {
+        case Some(coordinate) => pure(coordinate)
+        case None             => fail
+      }
+
+  def parse(input: String): Option[SquaredCoordinate] =
+    parser.parseAll(input).toOption
