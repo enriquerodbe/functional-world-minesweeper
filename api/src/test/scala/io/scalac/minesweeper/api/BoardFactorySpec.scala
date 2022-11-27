@@ -1,21 +1,25 @@
 package io.scalac.minesweeper.api
 
-import munit.FunSuite
+import munit.{FunSuite, ScalaCheckSuite}
+import org.scalacheck.Prop.*
 
-abstract class BoardFactorySpec(create: () => BoardFactory) extends FunSuite:
-  test("Should create board of given size") {
-    val board = create().create(5, _ => false)
-    assertEquals(board.allCoordinates.size, 5)
+abstract class BoardFactorySpec(boardFactory: BoardFactory)
+    extends ScalaCheckSuite:
+  val gen = new Generators(boardFactory)
+  import gen.*
+
+  property("Should create board of given size") {
+    forAll(sizeGen, hasMineGen) { (size, hasMine) =>
+      val board = boardFactory.create(size, hasMine)
+      assertEquals(board.allCoordinates.size, size)
+    }
   }
 
-  test("Should set mines correctly") {
-    val board = create().create(5, _.hashCode() % 2 == 0)
-    board.allCoordinates.foreach(c =>
-      assertEquals(c.hashCode() % 2 == 0, board.hasMine(c))
-    )
-  }
-
-  test("Should set all mines") {
-    val board = create().create(5, _ => true)
-    board.allCoordinates.foreach(c => assert(board.hasMine(c)))
+  property("Should set mines correctly") {
+    forAll(sizeGen, hasMineGen) { (size, hasMine) =>
+      val board = boardFactory.create(size, hasMine)
+      board.allCoordinates.foreach { c =>
+        assertEquals(board.hasMine(c), hasMine(c))
+      }
+    }
   }
