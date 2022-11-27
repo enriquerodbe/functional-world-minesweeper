@@ -30,4 +30,5 @@ lazy val squared =
 addCommandAlias("checkFormat", ";scalafmtSbtCheck ;scalafmtCheckAll")
 addCommandAlias("lint", "compile")
 addCommandAlias("testCoverage", ";coverage ;test ;coverageReport")
-addCommandAlias("verify", ";checkFormat ;lint ;testCoverage")
+addCommandAlias("mutationTest", ";project squared ;stryker")
+addCommandAlias("verify", ";checkFormat ;lint ;testCoverage; mutationTest")

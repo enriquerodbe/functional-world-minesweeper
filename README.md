@@ -30,6 +30,7 @@ There are some sbt command alias provided as well:
 - `lint` - Compile with strict flags enabled plus wartremover checks.
 - `testCoverage` - Enable coverage, run test, generate a report, and verify that minimum code
   coverage is reached.
+- `mutationTest` - Introduce changes to the code, run tests, and verify that some test fails.
 - `verify` - Run all the above sequentially.
 
 ## Tools
@@ -41,3 +42,4 @@ commands. See the corresponding documentation to find more about how they work:
 - [sbt-tpolecat](https://github.com/typelevel/sbt-tpolecat) - Strict scalac options
 - [WartRemover](https://www.wartremover.org) - Static linter
 - [sbt-scoverage](https://github.com/scoverage/sbt-scoverage) - Code coverage
+- [Stryker](https://stryker-mutator.io/docs/stryker4s/getting-started/) - Mutation testing
