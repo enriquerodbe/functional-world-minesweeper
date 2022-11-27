@@ -9,9 +9,9 @@ class SquaredBoard(override val size: Int, _hasMine: Coordinate => Boolean)
   override def uncover(coordinate: Coordinate): Board =
     new SquaredBoard(size, _hasMine):
       override def stateAt(_coordinate: Coordinate): Coordinate.State =
-        if _coordinate == coordinate && !previous.isFlagged(_coordinate) then
-          Coordinate.State.Uncovered
-        else previous.stateAt(_coordinate)
+        val previousState = previous.stateAt(_coordinate)
+        if _coordinate == coordinate then previousState.uncover
+        else previousState
 
       override def state: Board.State =
         if hasMine(coordinate) then
@@ -27,19 +27,12 @@ class SquaredBoard(override val size: Int, _hasMine: Coordinate => Boolean)
           .filterNot(hasMine)
           .forall(stateAt(_) == Coordinate.State.Uncovered)
 
-  private def isFlagged(coordinate: Coordinate): Boolean =
-    stateAt(coordinate) == Coordinate.State.Flagged
-
   override def flag(coordinate: Coordinate): Board =
     new SquaredBoard(size, _hasMine):
       override def stateAt(_coordinate: Coordinate): Coordinate.State =
-        previous.stateAt(_coordinate) match
-          case Coordinate.State.Covered if _coordinate == coordinate =>
-            Coordinate.State.Flagged
-          case Coordinate.State.Flagged if _coordinate == coordinate =>
-            Coordinate.State.Covered
-          case previousState =>
-            previousState
+        val previousState = previous.stateAt(_coordinate)
+        if _coordinate == coordinate then previousState.flag
+        else previousState
 
   override lazy val allCoordinates: Seq[SquaredCoordinate] =
     val maxIndex = SquaredCoordinate.maxIndex(size) + 1

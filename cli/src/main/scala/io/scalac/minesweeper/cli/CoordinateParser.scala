@@ -1,6 +1,6 @@
 package io.scalac.minesweeper.cli
 
-import io.scalac.minesweeper.api.{Board, Coordinate}
+import io.scalac.minesweeper.api.Coordinate
 
 trait CoordinateParser:
-  def parse(input: String, board: Board): Option[Coordinate]
+  def parse(input: String): Option[Coordinate]

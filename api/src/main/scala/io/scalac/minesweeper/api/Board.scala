@@ -13,6 +13,8 @@ trait Board:
 
   def state: Board.State
 
+  def isPlaying: Boolean = state == Board.State.Playing
+
   def show: String
 
   def size: Int

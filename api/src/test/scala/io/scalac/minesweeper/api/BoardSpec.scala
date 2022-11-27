@@ -4,7 +4,7 @@ import munit.ScalaCheckSuite
 import org.scalacheck.Prop.*
 
 abstract class BoardSpec(factory: BoardFactory) extends ScalaCheckSuite:
-  private val gen = new Generators(factory)
+  private val gen = Generators(factory)
   import gen.*
 
   property("All coordinates should start covered") {

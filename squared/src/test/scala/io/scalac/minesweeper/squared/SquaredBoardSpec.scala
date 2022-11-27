@@ -5,7 +5,7 @@ import munit.FunSuite
 
 class SquaredBoardSpec extends BoardSpec(SquaredBoardFactory):
   test("Should contain all coordinates") {
-    val board = new SquaredBoard(9, _ => false)
+    val board = SquaredBoard(9, _ => false)
     val coordinates = for
       x <- 0 until 3
       y <- 0 until 3
@@ -28,7 +28,7 @@ class SquaredBoardSpec extends BoardSpec(SquaredBoardFactory):
     val toFlag =
       Seq.tabulate(3)(SquaredCoordinate(0, _))
 
-    val initialBoard: Board = new SquaredBoard(size, hasMine)
+    val initialBoard: Board = SquaredBoard(size, hasMine)
 
     val uncovered =
       toUncover.foldLeft(initialBoard)(_ uncover _)
@@ -49,7 +49,7 @@ class SquaredBoardSpec extends BoardSpec(SquaredBoardFactory):
   private val lastIndex = SquaredCoordinate.maxIndex(boardSize)
   private val extremes = Seq(0, lastIndex)
   private val middle = 1 until lastIndex
-  private val board = new SquaredBoard(boardSize, _ => false)
+  private val board = SquaredBoard(boardSize, _ => false)
 
   test("Corners should have 3 neighbors") {
     product(extremes, extremes)
