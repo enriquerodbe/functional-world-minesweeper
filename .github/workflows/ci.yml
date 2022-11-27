@@ -1,0 +1,21 @@
+name: Continuous Integration
+
+on:
+  pull_request:
+    branches: [ '**' ]
+  push:
+    branches: [ 'main' ]
+
+jobs:
+  ci:
+    name: Continuous Integration
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: coursier/cache-action@v6.4.0
+      - name: Check format
+        run: sbt checkFormat
+      - name: Lint
+        run: sbt lint
+      - name: Test
+        run: sbt testCoverage
