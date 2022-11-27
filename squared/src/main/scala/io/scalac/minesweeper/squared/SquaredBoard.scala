@@ -3,19 +3,22 @@ package io.scalac.minesweeper.squared
 import io.scalac.minesweeper.api.*
 
 class SquaredBoard(size: Int, _hasMine: Coordinate => Boolean) extends Board:
+  previous =>
+
   override def uncover(coordinate: Coordinate): Board =
     new SquaredBoard(size, _hasMine):
       override def stateAt(_coordinate: Coordinate): Coordinate.State =
-        if SquaredBoard.this.stateAt(_coordinate) == Coordinate.State.Flagged
+        if previous.stateAt(_coordinate) == Coordinate.State.Flagged
         then Coordinate.State.Flagged
         else Coordinate.State.Uncovered
 
       override def state: Board.State =
         if hasMine(coordinate) then
           if stateAt(coordinate) == Coordinate.State.Flagged
-          then SquaredBoard.this.state
+          then previous.state
           else Board.State.Lost
-        else if (won()) Board.State.Won
+        else if won()
+        then Board.State.Won
         else Board.State.Playing
 
   private def won(): Boolean =
@@ -26,11 +29,13 @@ class SquaredBoard(size: Int, _hasMine: Coordinate => Boolean) extends Board:
   override def flag(coordinate: Coordinate): Board =
     new SquaredBoard(size, _hasMine):
       override def stateAt(_coordinate: Coordinate): Coordinate.State =
-        if (_coordinate == coordinate) Coordinate.State.Flagged
-        else SquaredBoard.this.stateAt(_coordinate)
+        if _coordinate == coordinate
+        then Coordinate.State.Flagged
+        else previous.stateAt(_coordinate)
 
-  override def allCoordinates: Seq[Coordinate] =
-    Seq.tabulate(size)(SquaredCoordinate(_, 0))
+  override lazy val allCoordinates: Seq[SquaredCoordinate] =
+    val sqrt = math.sqrt(size.toDouble).round.toInt
+    (0 until size).map(n => SquaredCoordinate(n / sqrt, n % sqrt))
 
   override def hasMine(coordinate: Coordinate): Boolean =
     _hasMine(coordinate)
