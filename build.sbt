@@ -7,12 +7,15 @@ lazy val commonSettings = Seq(
   coverageMinimumBranchTotal := 100
 )
 
+val munit = "org.scalameta" %% "munit" % "0.7.29" % Test
+
 lazy val api =
   project
     .in(file("api"))
     .settings(commonSettings)
     .settings(
-      name := "minesweeper-api"
+      name := "minesweeper-api",
+      libraryDependencies += munit
     )
 
 lazy val squared =
