@@ -19,3 +19,5 @@ jobs:
         run: sbt lint
       - name: Test
         run: sbt testCoverage
+      - name: Mutation test
+        run: sbt mutationTest

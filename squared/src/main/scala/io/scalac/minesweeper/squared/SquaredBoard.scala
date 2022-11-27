@@ -8,9 +8,9 @@ class SquaredBoard(size: Int, _hasMine: Coordinate => Boolean) extends Board:
   override def uncover(coordinate: Coordinate): Board =
     new SquaredBoard(size, _hasMine):
       override def stateAt(_coordinate: Coordinate): Coordinate.State =
-        if previous.stateAt(_coordinate) == Coordinate.State.Flagged
-        then Coordinate.State.Flagged
-        else Coordinate.State.Uncovered
+        if _coordinate == coordinate && !previous.isFlagged(_coordinate) then
+          Coordinate.State.Uncovered
+        else previous.stateAt(_coordinate)
 
       override def state: Board.State =
         if hasMine(coordinate) then
@@ -21,10 +21,13 @@ class SquaredBoard(size: Int, _hasMine: Coordinate => Boolean) extends Board:
         then Board.State.Won
         else Board.State.Playing
 
-  private def won(): Boolean =
-    allCoordinates
-      .filter(!hasMine(_))
-      .forall(stateAt(_) == Coordinate.State.Uncovered)
+      private def won(): Boolean =
+        allCoordinates
+          .filterNot(hasMine)
+          .forall(stateAt(_) == Coordinate.State.Uncovered)
+
+  private def isFlagged(coordinate: Coordinate): Boolean =
+    stateAt(coordinate) == Coordinate.State.Flagged
 
   override def flag(coordinate: Coordinate): Board =
     new SquaredBoard(size, _hasMine):
