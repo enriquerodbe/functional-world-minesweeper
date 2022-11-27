@@ -2,7 +2,8 @@ package io.scalac.minesweeper.squared
 
 import io.scalac.minesweeper.api.*
 
-class SquaredBoard(size: Int, _hasMine: Coordinate => Boolean) extends Board:
+class SquaredBoard(override val size: Int, _hasMine: Coordinate => Boolean)
+    extends Board:
   previous =>
 
   override def uncover(coordinate: Coordinate): Board =
@@ -32,13 +33,17 @@ class SquaredBoard(size: Int, _hasMine: Coordinate => Boolean) extends Board:
   override def flag(coordinate: Coordinate): Board =
     new SquaredBoard(size, _hasMine):
       override def stateAt(_coordinate: Coordinate): Coordinate.State =
-        if _coordinate == coordinate
-        then Coordinate.State.Flagged
-        else previous.stateAt(_coordinate)
+        previous.stateAt(_coordinate) match
+          case Coordinate.State.Covered if _coordinate == coordinate =>
+            Coordinate.State.Flagged
+          case Coordinate.State.Flagged if _coordinate == coordinate =>
+            Coordinate.State.Covered
+          case previousState =>
+            previousState
 
   override lazy val allCoordinates: Seq[SquaredCoordinate] =
-    val sqrt = math.sqrt(size.toDouble).round.toInt
-    (0 until size).map(n => SquaredCoordinate(n / sqrt, n % sqrt))
+    val maxIndex = SquaredCoordinate.maxIndex(size) + 1
+    (0 until size).map(n => SquaredCoordinate(n / maxIndex, n % maxIndex))
 
   override def hasMine(coordinate: Coordinate): Boolean =
     _hasMine(coordinate)
@@ -48,3 +53,33 @@ class SquaredBoard(size: Int, _hasMine: Coordinate => Boolean) extends Board:
 
   override def state: Board.State =
     Board.State.Playing
+
+  override val show: String =
+    allCoordinates
+      .groupBy(_.x)
+      .toSeq
+      .sortBy(_._1)
+      .map(_._2)
+      .map(_.sortBy(_.y))
+      .map(_.map(showCoordinate))
+      .map(_.mkString(" | "))
+      .mkString("\n")
+
+  private def showCoordinate(coordinate: SquaredCoordinate): String =
+    stateAt(coordinate) match
+      case Coordinate.State.Covered => "+"
+      case Coordinate.State.Uncovered =>
+        neighbors(coordinate).count(hasMine).toString
+      case Coordinate.State.Flagged => "F"
+
+  def neighbors(coordinate: SquaredCoordinate): Seq[SquaredCoordinate] =
+    Seq(
+      SquaredCoordinate.validated(coordinate.x - 1, coordinate.y - 1, size),
+      SquaredCoordinate.validated(coordinate.x - 1, coordinate.y, size),
+      SquaredCoordinate.validated(coordinate.x - 1, coordinate.y + 1, size),
+      SquaredCoordinate.validated(coordinate.x, coordinate.y - 1, size),
+      SquaredCoordinate.validated(coordinate.x, coordinate.y + 1, size),
+      SquaredCoordinate.validated(coordinate.x + 1, coordinate.y - 1, size),
+      SquaredCoordinate.validated(coordinate.x + 1, coordinate.y, size),
+      SquaredCoordinate.validated(coordinate.x + 1, coordinate.y + 1, size)
+    ).flatten

@@ -13,6 +13,10 @@ trait Board:
 
   def state: Board.State
 
+  def show: String
+
+  def size: Int
+
 object Board:
   enum State:
     case Playing, Lost, Won

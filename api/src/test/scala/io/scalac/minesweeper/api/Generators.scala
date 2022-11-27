@@ -6,10 +6,10 @@ import scala.math.max
 
 class Generators(boardFactory: BoardFactory):
   def boardGen(chanceOfMine: Double): Gen[Board] =
-    for {
+    for
       size <- sizeGen
       hasMine <- hasMineGen(prob(chanceOfMine))
-    } yield boardFactory.create(size, hasMine)
+    yield boardFactory.create(size, hasMine)
 
   val sizeGen: Gen[Int] =
     sized(size => choose(1, max(1, size)))
